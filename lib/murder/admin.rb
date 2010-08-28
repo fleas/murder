@@ -26,7 +26,11 @@ namespace :murder do
 
     # TODO: Skip hidden (.*) files
     # TODO: Specifyable tmp file
-    system "tar -c -z -C #{dist_path} -f /tmp/murder_dist.tgz ."
+    #system "tar -c -z -C #{dist_path} -f /tmp/murder_dist.tgz ."
+    
+    # using find and cpio -H tar so we don't have to fuss with --exclude=pattern clobbering
+    # maybe use .??* but then run the risk of files like .a being missed 
+    system("find #{dist_path} !  -name '.*' | cpio -o -H ustar | gzip -c > /tmp/murder_dist.tgz ")
     upload("/tmp/murder_dist.tgz", "/tmp/murder_dist.tgz", :via => :sftp)
     run "tar xf /tmp/murder_dist.tgz -C #{remote_murder_path}"
     run "rm /tmp/murder_dist.tgz"
