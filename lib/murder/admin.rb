@@ -24,12 +24,8 @@ namespace :murder do
     run "mkdir -p #{remote_murder_path}/"
     run "[ $(find '#{remote_murder_path}/'* | wc -l ) -lt 1000 ] && rm -rf '#{remote_murder_path}/'* || ( echo 'Cowardly refusing to remove files! Check the remote_murder_path.' ; exit 1 )"
 
-    # TODO: Skip hidden (.*) files
     # TODO: Specifyable tmp file
-    #system "tar -c -z -C #{dist_path} -f /tmp/murder_dist.tgz ."
-    
-    # using find and cpio -H tar so we don't have to fuss with --exclude=pattern clobbering
-    # maybe use .??* but then run the risk of files like .a being missed 
+    # using find and cpio -H tar so we don't have to fuss with --exclude{-from}=[pattern|FILE] shopt -s dotglob
     system("find #{dist_path} !  -name '.*' | cpio -o -H ustar | gzip -c > /tmp/murder_dist.tgz ")
     upload("/tmp/murder_dist.tgz", "/tmp/murder_dist.tgz", :via => :sftp)
     run "tar xf /tmp/murder_dist.tgz -C #{remote_murder_path}"
